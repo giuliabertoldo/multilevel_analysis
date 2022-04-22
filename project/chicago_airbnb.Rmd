@@ -1,11 +1,12 @@
 ---
-title: 'Case Study: Music Performance Anxiety'
+title: "Chicago Airbnb data"
 author: "Giulia Bertoldo"
 date: "4/22/2022"
 output: pdf_document
 ---
 
 # Load packages
+
 ```{r}
 library(MASS)
 library(mnormt) 
@@ -13,17 +14,16 @@ library(lme4)
 library(tidyverse)
 ```
 
+
 # Load data
+
 ```{r}
 # Load csv file
-music <- read.csv("data/musicdata.csv")
+df <- read.csv("data/airbnb.csv")
 # Dimension 
-dim(music)
+dim(df)
 # Examine first 6 rows
-head(music)       
+head(df)       
 # Glimpse data
-glimpse(music)
+glimpse(df)
 ```
-
-# Exploratory analyses 
-
