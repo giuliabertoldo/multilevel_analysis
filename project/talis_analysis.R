@@ -3,6 +3,7 @@ library(tidyverse)
 library(GGally)
 library(ggplot2)
 library(DataExplorer)
+library(lme4)
 theme_set(theme_bw())
 
 # Load data ---------------------------------------------------------------
@@ -127,4 +128,40 @@ ggplot(data  = df2,
        subtitle = "Colored by school",
        x = "Workload Stress",
        y = "Job Satisfaction")
+
+
+# Show variation across a subset of ten schools ---------------------------
+random_id <- sample(unique(df2$IDSCHOOL), size = 10)
+(p_subset <- df2 %>%
+    filter(IDSCHOOL %in% random_id) %>%  # select only 10 schools
+    ggplot(aes(x = IDSCHOOL, y = T3JOBSA )) +
+    geom_jitter(height = 0, width = 0.1, alpha = 0.3) +
+    # Add school means
+    stat_summary(
+      fun = "mean",
+      geom = "point",
+      col = "red",
+      shape = 17,
+      # use triangles
+      size = 4
+    )  # make them larger
+)
+
+
+
+# Unconditional random intercept model ------------------------------------
+model1 <- lmer(T3JOBSA ~ 1 + (1 | IDSCHOOL), data = df2)
+# Summarize results
+summary(model1)
+
+# ICC ---------------------------------------------------------------------
+variance_components <- as.data.frame(VarCorr(model1))
+(between_var <- variance_components$vcov[1])
+(within_var <- variance_components$vcov[2])
+(icc <- round(between_var / (between_var + within_var),2))
+
+
+
+
+
 
