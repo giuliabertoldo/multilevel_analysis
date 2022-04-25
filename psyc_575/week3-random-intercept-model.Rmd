@@ -40,7 +40,7 @@ First, download the data from <https://github.com/marklhc/marklai-pages/raw/mast
 
 ```{r import_sav, message=FALSE}
 # Read in the data (pay attention to the directory)
-hsball <- read_sav(here("data_files", "hsball.sav"))
+hsball <- read_sav("hsball.sav")
 hsball  # print the data
 ```
 
