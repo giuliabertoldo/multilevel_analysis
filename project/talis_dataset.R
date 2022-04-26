@@ -95,7 +95,17 @@ teachers <- teach_quest %>%
          T3SELF,
          T3SECLS,
          T3SEINS,
-         T3SEENG)
+         T3SEENG,
+         T3PERUT,
+         T3SOCUT,
+         T3VALP,
+         T3COOP,
+         T3EXCH,
+         T3COLES,
+         T3EFFPD,
+         T3PDPED,
+         T3PDIV,
+         T3PDBAR)
 
 # * Subset school dataset -------------------------------------------------
 schools <- school_quest %>%
@@ -107,7 +117,10 @@ schools <- school_quest %>%
          T3PDELI,
          T3PLACPE,
          T3PLACRE,
-         T3PLACMA)
+         T3PLACMA,
+         T3PLEADS,
+         T3PLEADP,
+         T3PDIVB)
 
 
 # * Merge teacher and school dataset --------------------------------------
@@ -327,3 +340,4 @@ length(unique(df2$IDTEACH))
 length(unique(df2$IDSCHOOL))
 # Save dataframe as csv
 write.csv(df2, "df2.csv", row.names = FALSE)
+
