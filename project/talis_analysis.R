@@ -110,7 +110,6 @@ ggplot(data  = df2,
        x = "Workload Stress",
        y = "Job Satisfaction")
 
-
 # Relationship between Workload Stress and Job Satisfaction
 ggplot(data  = df2,
        aes(x = T3WLOAD,
@@ -129,6 +128,33 @@ ggplot(data  = df2,
        x = "Workload Stress",
        y = "Job Satisfaction")
 
+# Relationship between Workload Stress and Job Satisfaction
+df2 %>%
+  ggplot(aes(x = T3WLOAD, y = T3JOBSA, col = IDSCHOOL)) +
+  geom_point(alpha = 0.5, size = 0.5) +
+  guides(col = "none") +
+  labs(title = "Job Satisfaction vs. Workload Stress",
+       subtitle = "Colored by school",
+       x = "Workload Stress",
+       y = "Job Satisfaction")
+
+# Relationship between lack of resources and Job Satisfaction
+ggplot(data  = df2,
+       aes(x = T3PLACRE,
+           y = T3JOBSA,
+           col = IDSCHOOL))+
+  geom_point(size = 1.2,
+             alpha = .8)+
+  geom_smooth(method = lm,
+              se     = FALSE,
+              col = "black",
+              size   = .5,
+              alpha  = .8)+
+  theme(legend.position = "none")+
+  labs(title = "Job Satisfaction vs. Lack of resources",
+       subtitle = "Colored by school",
+       x = "Lack of resources",
+       y = "Job Satisfaction")
 
 # Show variation across a subset of ten schools ---------------------------
 random_id <- sample(unique(df2$IDSCHOOL), size = 10)
