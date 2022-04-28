@@ -46,92 +46,37 @@ nlevels(df$T3PLACMA)
 glimpse(df)
 
 
+# Center predictor --------------------------------------------------------
 
-# * Center predictors (Grand mean centering) ------------------------------
+# T3WLOAD
+# Cluster-mean centering
+# To separate the effects of a lv-1 predictor into different levels,
+# one needs to first center the predictor on the cluster means:
+df <- df %>%
+  group_by(IDSCHOOL) %>%   # operate within schools
+  mutate(stress_cm = mean(T3WLOAD, na.rm = TRUE),   # create cluster means
+         stress_cmc = T3WLOAD - stress_cm) %>%   # cluster-mean centered
+  ungroup()
 
-# Mean-center Workplace wellbeing and stress
-df$T3WELS <- df$T3WELS - mean(df$T3WELS, na.rm =TRUE)
-summary(df$T3WELS )
-# Mean- Center Workload stress
-df$T3WLOAD <- df$T3WLOAD - mean(df$T3WLOAD, na.rm =TRUE)
-summary(df$T3WLOAD )
-# Mean-center Student behavior stress
-df$T3STBEH <- df$T3STBEH - mean(df$T3STBEH, na.rm =TRUE)
-summary(df$T3STBEH)
-# Mean-center Teacher self-efficacy, composite
-df$T3SELF <- df$T3SELF - mean(df$T3SELF, na.rm =TRUE)
-summary(df$T3SELF)
-# Mean-center Self-efficacy in classroom management
-df$T3SECLS <- df$T3SECLS - mean(df$T3SECLS, na.rm =TRUE)
-summary(df$T3SECLS)
-# Mean-center Self-efficacy in instruction
-df$T3SEINS <- df$T3SEINS - mean(df$T3SEINS, na.rm =TRUE)
-summary(df$T3SEINS)
-# Mean-center Self-efficacy in student engagement
-df$T3SEENG <- df$T3SEENG - mean(df$T3SEENG, na.rm =TRUE)
-summary(df$T3SEENG)
-# Mean-center Self-efficacy in student engagement
-df$T3SEENG <- df$T3SEENG - mean(df$T3SEENG, na.rm =TRUE)
-summary(df$T3SEENG)
-# Mean-center Personal utility motivation to teach
-df$T3PERUT <- df$T3PERUT - mean(df$T3PERUT, na.rm =TRUE)
-summary(df$T3PERUT)
-# Mean-center Social utility motivation to teach
-df$T3SOCUT <- df$T3SOCUT - mean(df$T3SOCUT, na.rm =TRUE)
-summary(df$T3SOCUT)
-# Mean-center Perceptions of value and policy influence
-df$T3VALP <- df$T3VALP - mean(df$T3VALP, na.rm =TRUE)
-summary(df$T3VALP)
-# Mean-center Teacher cooperation composite
-df$T3COOP <- df$T3COOP - mean(df$T3COOP, na.rm =TRUE)
-summary(df$T3COOP)
-# Mean-center Exchange and coordination among teachers
-df$T3EXCH <- df$T3EXCH - mean(df$T3EXCH, na.rm =TRUE)
-summary(df$T3EXCH)
-# Mean-center Professional collaboration in lessons among teachers
-df$T3COLES <- df$T3COLES - mean(df$T3COLES, na.rm =TRUE)
-summary(df$T3COLES)
-# Mean-center Effective professional development
-df$T3EFFPD <- df$T3EFFPD - mean(df$T3EFFPD, na.rm =TRUE)
-summary(df$T3EFFPD)
-# Mean-center Needs for professional development
-df$T3PDPED <- df$T3PDPED - mean(df$T3PDPED, na.rm =TRUE)
-summary(df$T3PDPED)
-# Mean-center Needs for professional development for teaching for diversity
-df$T3PDIV <- df$T3PDIV - mean(df$T3PDIV, na.rm =TRUE)
-summary(df$T3PDIV)
-# Mean-center Professional development barriers
-df$T3PDBAR <- df$T3PDBAR - mean(df$T3PDBAR, na.rm =TRUE)
-summary(df$T3PDBAR)
+# T3WELS
+# Cluster-mean centering
+# To separate the effects of a lv-1 predictor into different levels,
+# one needs to first center the predictor on the cluster means:
+df <- df %>%
+  group_by(IDSCHOOL) %>%   # operate within schools
+  mutate(stress2_cm = mean(T3WELS, na.rm = TRUE),   # create cluster means
+         stress2_cmc = T3WELS - stress2_cm) %>%   # cluster-mean centered
+  ungroup()
 
-# Mean-center Academic pressure
-df$T3PACAD <- df$T3PACAD - mean(df$T3PACAD, na.rm =TRUE)
-summary(df$T3PACAD)
-# Mean-center Stakeholder involvement, partnership
-df$T3PCOM <- df$T3PCOM - mean(df$T3PCOM, na.rm =TRUE)
-summary(df$T3PCOM)
-# Mean-center Lack of special needs personnel
-df$T3PLACSN <- df$T3PLACSN - mean(df$T3PLACSN, na.rm =TRUE)
-summary(df$T3PLACSN)
-# Mean-center School delinquency and violence
-df$T3PDELI <- df$T3PDELI - mean(df$T3PDELI, na.rm =TRUE)
-summary(df$T3PDELI)
-# Mean-center School leadership
-df$T3PLEADS <- df$T3PLEADS - mean(df$T3PLEADS, na.rm =TRUE)
-summary(df$T3PLEADS)
-# Mean-center Participation among stakeholders
-df$T3PLEADP <- df$T3PLEADP - mean(df$T3PLEADP, na.rm =TRUE)
-summary(df$T3PLEADP)
-# Mean-center Equity and diversity - diversity beliefs
-df$T3PDIVB <- df$T3PDIVB - mean(df$T3PDIVB, na.rm =TRUE)
-summary(df$T3PDIVB)
-
-# Glimpse data
-glimpse(df)
-
-
-# * Center predictors (Group mean centering)  -----------------------------
-
+# T3SLEF
+# Cluster-mean centering
+# To separate the effects of a lv-1 predictor into different levels,
+# one needs to first center the predictor on the cluster means:
+df <- df %>%
+  group_by(IDSCHOOL) %>%   # operate within schools
+  mutate(tself_cm = mean(T3SELF, na.rm = TRUE),   # create cluster means
+         tself_cmc = T3SELF - tself_cm) %>%   # cluster-mean centered
+  ungroup()
 
 # Exploratory data analysis  ----------------------------------------------
 # * Univariate analysis ---------------------------------------------------
@@ -295,8 +240,9 @@ cluster_size <- df %>%
 (n_eff <- length(df$IDTEACH)/design_effect)
 
 
-# Model with a level-2 variable: School delinquency -----------------------
-model2 <- lmer(T3JOBSA ~ T3PDELI + (1 | IDSCHOOL), data = df)
+
+#  Model with a level-2 variable: Mean workload stress --------------------
+model2 <- lmer(T3JOBSA ~ stress_cm + (1 | IDSCHOOL), data = df)
 # Summarize results
 summary(model2)
 # Likelihood-based confidence intervals for fixed effects
@@ -305,11 +251,11 @@ confint(model2)
 # Plot
 sjPlot::plot_model(model2,
                    type = "pred",
-                   terms = "T3PDELI",
+                   terms = "stress_cm",
                    show.data = TRUE,
                    title = "",
                    dot.size = 0.5) +
-  stat_summary(data = df, aes(x = T3PDELI, y = T3JOBSA),
+  stat_summary(data = df, aes(x = stress_cm, y = T3JOBSA),
                fun = mean, geom = "point",
                col = "red",
                shape = 17,
@@ -324,5 +270,392 @@ r2mlm::r2mlm(model2)
 
 
 
+# Between-Within: Model with lvl-1 predictor: Workload stress  ------------
+model3 <- lmer(T3JOBSA ~ stress_cm + stress_cmc + (1 | IDSCHOOL), data = df)
+# Summarize results
+summary(model3)
+# Likelihood-based confidence intervals for fixed effects
+confint(model3)
+
+# Contextual effect: Model with lvl-1 predictor: Workload stress ----------
+model4 <- lmer(T3JOBSA ~ stress_cm + T3WLOAD + (1 | IDSCHOOL), data = df)
+# Summarize results
+summary(model4)
+# Likelihood-based confidence intervals for fixed effects
+confint(model4)
 
 
+# Random coefficients model -----------------------------------------------
+# Graphically explore slopes of a sample
+set.seed(1)
+df %>%
+  # randomly sample 16 schools
+  filter(IDSCHOOL %in% sample(unique(IDSCHOOL), 16)) %>%
+  ggplot(aes(x = stress_cmc, y = T3JOBSA)) +
+  geom_point(size = 0.5) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~IDSCHOOL)
+
+# Model 5
+model5 <- lmer(T3JOBSA ~ stress_cm + stress_cmc + (stress_cmc | IDSCHOOL), data = df)
+# Summarize results
+summary(model5)
+# Likelihood-based confidence intervals for fixed effects
+confint(model5)
+
+# Plotting random slopes
+augment(model5, data = df) %>% # augmented data (adding EB estimates)
+  ggplot(aes(x = T3WLOAD, y = .fitted, color = factor(IDSCHOOL))) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  labs(y = "Predicted Job Satisfaction") +
+  guides(color = "none")
+
+# Create a common base graph
+pbase <- augment(model5, data = df) %>%
+  ggplot(aes(x = T3WLOAD, y = T3JOBSA, color = factor(IDSCHOOL))) +
+  # Add points
+  geom_point(size = 0.2, alpha = 0.2) +
+  labs(y = "Job Satisfaction") +
+  # Suppress legend
+  guides(color = "none")
+# Lv-1 effect
+p1 <- pbase +
+  # Add within-cluster lines
+  geom_smooth(aes(y = .fitted),
+              method = "lm", se = FALSE, size = 0.5)
+# Lv-2 effect
+p2 <- pbase +
+  # Add group means
+  stat_summary(aes(x = stress_cm, y = .fitted),
+               fun = mean,
+               geom = "point",
+               shape = 17,
+               # use triangles
+               size = 2.5) +
+  # Add between coefficient
+  geom_smooth(aes(x = stress_cm, y = .fitted),
+              method = "lm", se = FALSE,
+              color = "black")
+# Put the two graphs together (need the gridExtra package)
+gridExtra::grid.arrange(p1, p2, ncol = 2)
+
+
+# Effect size -------------------------------------------------------------
+
+(r2_model5 <- r.squaredGLMM(model5))
+
+# Cross-level interaction -------------------------------------------------
+# Model 6
+model6 <- lmer(T3JOBSA ~ stress_cm + SCHLOC * stress_cmc + (stress_cmc | IDSCHOOL), data = df)
+# Summarize results
+summary(model6)
+# Likelihood-based confidence intervals for fixed effects
+confint(model6)
+
+# Effect size
+(r2_model6 <- r.squaredGLMM(model6))
+# Change
+r2_model6 - r2_model5
+
+# Plot the interaction
+model6 %>%
+  augment(data = df) %>%
+  ggplot(aes(
+    x = T3WLOAD, y = .fitted, group = factor(IDSCHOOL),
+    color = factor(SCHLOC)
+  )) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  labs(y = "Predicted Job Satisfaction", color = "SCHLOC")
+
+# Interaction just the fixed effects
+interact_plot(model6,
+              pred = "stress_cm",
+              modx = "SCHLOC",
+              modx.labels = c("Rural", "Town", "City"),
+              plot.points = TRUE,
+              point.size = 0.5,
+              point.alpha = 0.2,
+              facet.modx = TRUE,  # use this to make two panels
+              x.label = "Workload Stress (cluster-mean centered)",
+              y.label = "Job Satisfaction")
+
+
+# T3WELS ------------------------------------------------------------------
+
+# Model with a level-2 variable: Mean workload stress --------------------
+  model22 <- lmer(T3JOBSA ~ stress2_cm + (1 | IDSCHOOL), data = df)
+# Summarize results
+summary(model22)
+# Likelihood-based confidence intervals for fixed effects
+confint(model22)
+
+# Plot
+sjPlot::plot_model(model22,
+                   type = "pred",
+                   terms = "stress2_cm",
+                   show.data = TRUE,
+                   title = "",
+                   dot.size = 0.5) +
+  stat_summary(data = df, aes(x = stress2_cm, y = T3JOBSA),
+               fun = mean, geom = "point",
+               col = "red",
+               shape = 17,
+               # use triangles
+               size = 3,
+               alpha = 0.7)
+
+
+# Proportion of variance explained  ---------------------------------------
+# Use Rights & Sterba (2019)
+r2mlm::r2mlm(model22)
+
+
+
+# Between-Within: Model with lvl-1 predictor: Workload stress  ------------
+model32 <- lmer(T3JOBSA ~ stress2_cm + stress2_cmc + (1 | IDSCHOOL), data = df)
+# Summarize results
+summary(model32)
+# Likelihood-based confidence intervals for fixed effects
+confint(model32)
+
+# Contextual effect: Model with lvl-1 predictor: Workload stress ----------
+model42 <- lmer(T3JOBSA ~ stress2_cm + T3WELS + (1 | IDSCHOOL), data = df)
+# Summarize results
+summary(model42)
+# Likelihood-based confidence intervals for fixed effects
+confint(model42)
+
+
+# Random coefficients model -----------------------------------------------
+# Graphically explore slopes of a sample
+set.seed(12)
+df %>%
+  # randomly sample 16 schools
+  filter(IDSCHOOL %in% sample(unique(IDSCHOOL), 16)) %>%
+  ggplot(aes(x = stress2_cmc, y = T3JOBSA)) +
+  geom_point(size = 0.5) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~IDSCHOOL)
+
+# Model 5
+model52 <- lmer(T3JOBSA ~ stress2_cm + stress2_cmc + (stress2_cmc | IDSCHOOL), data = df)
+# Summarize results
+summary(model52)
+# Likelihood-based confidence intervals for fixed effects
+confint(model52)
+
+# Plotting random slopes
+augment(model52, data = df) %>% # augmented data (adding EB estimates)
+  ggplot(aes(x = T3WELS, y = .fitted, color = factor(IDSCHOOL))) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  labs(y = "Predicted Job Satisfaction") +
+  guides(color = "none")
+
+# Create a common base graph
+pbase <- augment(model52, data = df) %>%
+  ggplot(aes(x = T3WELS, y = T3JOBSA, color = factor(IDSCHOOL))) +
+  # Add points
+  geom_point(size = 0.2, alpha = 0.2) +
+  labs(y = "Job Satisfaction") +
+  # Suppress legend
+  guides(color = "none")
+# Lv-1 effect
+p1 <- pbase +
+  # Add within-cluster lines
+  geom_smooth(aes(y = .fitted),
+              method = "lm", se = FALSE, size = 0.5)
+# Lv-2 effect
+p2 <- pbase +
+  # Add group means
+  stat_summary(aes(x = stress2_cm, y = .fitted),
+               fun = mean,
+               geom = "point",
+               shape = 17,
+               # use triangles
+               size = 2.5) +
+  # Add between coefficient
+  geom_smooth(aes(x = stress2_cm, y = .fitted),
+              method = "lm", se = FALSE,
+              color = "black")
+# Put the two graphs together (need the gridExtra package)
+gridExtra::grid.arrange(p1, p2, ncol = 2)
+
+
+# Effect size -------------------------------------------------------------
+
+(r2_model52 <- r.squaredGLMM(model52))
+
+# Cross-level interaction -------------------------------------------------
+# Model 6
+model62 <- lmer(T3JOBSA ~ stress2_cm + T3PLACPE * stress2_cmc + (stress2_cmc | IDSCHOOL), data = df)
+# Summarize results
+summary(model62)
+# Likelihood-based confidence intervals for fixed effects
+confint(model62)
+
+# Effect size
+(r2_model62 <- r.squaredGLMM(model62))
+# Change
+r2_model62 - r2_model52
+
+# Plot the interaction
+model62 %>%
+  augment(data = df) %>%
+  ggplot(aes(
+    x = T3WELS, y = .fitted, group = factor(T3PLACPE),
+    color = factor(T3PLACPE)
+  )) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  labs(y = "Predicted Job Satisfaction", color = "T3PLACPE")
+
+# Interaction just the fixed effects
+interact_plot(model62,
+              pred = "stress2_cmc",
+              modx = "T3PLACPE",
+              modx.labels = c("Not a problem", "A bit of a problem", "A problem"),
+              plot.points = TRUE,
+              point.size = 0.5,
+              point.alpha = 0.2,
+              facet.modx = TRUE,  # use this to make two panels
+              x.label = "Stress (cluster-mean centered)",
+              y.label = "Job Satisfaction")
+
+# T3SELF ------------------------------------------------------------------
+
+# Model with a level-2 variable: Mean workload stress --------------------
+model23 <- lmer(T3JOBSA ~ tself_cm + (1 | IDSCHOOL), data = df)
+# Summarize results
+summary(model23)
+# Likelihood-based confidence intervals for fixed effects
+confint(model23)
+
+# Plot
+sjPlot::plot_model(model23,
+                   type = "pred",
+                   terms = "tself_cm",
+                   show.data = TRUE,
+                   title = "",
+                   dot.size = 0.5) +
+  stat_summary(data = df, aes(x = tself_cm, y = T3JOBSA),
+               fun = mean, geom = "point",
+               col = "red",
+               shape = 17,
+               # use triangles
+               size = 3,
+               alpha = 0.7)
+
+
+# Proportion of variance explained  ---------------------------------------
+# Use Rights & Sterba (2019)
+r2mlm::r2mlm(model22)
+
+
+
+# Between-Within: Model with lvl-1 predictor: Workload stress  ------------
+model32 <- lmer(T3JOBSA ~ stress2_cm + stress2_cmc + (1 | IDSCHOOL), data = df)
+# Summarize results
+summary(model32)
+# Likelihood-based confidence intervals for fixed effects
+confint(model32)
+
+# Contextual effect: Model with lvl-1 predictor: Workload stress ----------
+model42 <- lmer(T3JOBSA ~ stress2_cm + T3WELS + (1 | IDSCHOOL), data = df)
+# Summarize results
+summary(model42)
+# Likelihood-based confidence intervals for fixed effects
+confint(model42)
+
+
+# Random coefficients model -----------------------------------------------
+# Graphically explore slopes of a sample
+set.seed(12)
+df %>%
+  # randomly sample 16 schools
+  filter(IDSCHOOL %in% sample(unique(IDSCHOOL), 16)) %>%
+  ggplot(aes(x = stress2_cmc, y = T3JOBSA)) +
+  geom_point(size = 0.5) +
+  geom_smooth(method = "lm") +
+  facet_wrap(~IDSCHOOL)
+
+# Model 5
+model52 <- lmer(T3JOBSA ~ stress2_cm + stress2_cmc + (stress2_cmc | IDSCHOOL), data = df)
+# Summarize results
+summary(model52)
+# Likelihood-based confidence intervals for fixed effects
+confint(model52)
+
+# Plotting random slopes
+augment(model52, data = df) %>% # augmented data (adding EB estimates)
+  ggplot(aes(x = T3WELS, y = .fitted, color = factor(IDSCHOOL))) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  labs(y = "Predicted Job Satisfaction") +
+  guides(color = "none")
+
+# Create a common base graph
+pbase <- augment(model52, data = df) %>%
+  ggplot(aes(x = T3WELS, y = T3JOBSA, color = factor(IDSCHOOL))) +
+  # Add points
+  geom_point(size = 0.2, alpha = 0.2) +
+  labs(y = "Job Satisfaction") +
+  # Suppress legend
+  guides(color = "none")
+# Lv-1 effect
+p1 <- pbase +
+  # Add within-cluster lines
+  geom_smooth(aes(y = .fitted),
+              method = "lm", se = FALSE, size = 0.5)
+# Lv-2 effect
+p2 <- pbase +
+  # Add group means
+  stat_summary(aes(x = stress2_cm, y = .fitted),
+               fun = mean,
+               geom = "point",
+               shape = 17,
+               # use triangles
+               size = 2.5) +
+  # Add between coefficient
+  geom_smooth(aes(x = stress2_cm, y = .fitted),
+              method = "lm", se = FALSE,
+              color = "black")
+# Put the two graphs together (need the gridExtra package)
+gridExtra::grid.arrange(p1, p2, ncol = 2)
+
+
+# Effect size -------------------------------------------------------------
+
+(r2_model52 <- r.squaredGLMM(model52))
+
+# Cross-level interaction -------------------------------------------------
+# Model 6
+model62 <- lmer(T3JOBSA ~ stress2_cm + T3PLACPE * stress2_cmc + (stress2_cmc | IDSCHOOL), data = df)
+# Summarize results
+summary(model62)
+# Likelihood-based confidence intervals for fixed effects
+confint(model62)
+
+# Effect size
+(r2_model62 <- r.squaredGLMM(model62))
+# Change
+r2_model62 - r2_model52
+
+# Plot the interaction
+model62 %>%
+  augment(data = df) %>%
+  ggplot(aes(
+    x = T3WELS, y = .fitted, group = factor(T3PLACPE),
+    color = factor(T3PLACPE)
+  )) +
+  geom_smooth(method = "lm", se = FALSE, size = 0.5) +
+  labs(y = "Predicted Job Satisfaction", color = "T3PLACPE")
+
+# Interaction just the fixed effects
+interact_plot(model62,
+              pred = "stress2_cmc",
+              modx = "T3PLACPE",
+              modx.labels = c("Not a problem", "A bit of a problem", "A problem"),
+              plot.points = TRUE,
+              point.size = 0.5,
+              point.alpha = 0.2,
+              facet.modx = TRUE,  # use this to make two panels
+              x.label = "Stress (cluster-mean centered)",
+              y.label = "Job Satisfaction")

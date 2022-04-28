@@ -299,7 +299,7 @@ ggplot(df, aes(x=IDSCHOOL, y=T3JOBSA)) +
 
 
 
-# Create final dataset ----------------------------------------------------
+# Create final dataset 1 ---------------------------------------------------
 # Option 1
 # The dataset includes the variables listed below
 # also with missing observations
@@ -341,3 +341,42 @@ length(unique(df2$IDSCHOOL))
 # Save dataframe as csv
 write.csv(df2, "df2.csv", row.names = FALSE)
 
+# Create final dataset 2 ---------------------------------------------------
+# Option 1
+# The dataset includes the variables listed below
+# also with missing observations
+df3 <- df %>%
+  select(IDSCHOOL,
+         IDTEACH,
+         TT3G01,
+         TCHAGEGR,
+         T3JOBSA,
+         T3WELS,
+         SCHLOC)
+summary(df3)
+# How many teachers?
+length(unique(df3$IDTEACH))
+# How many schools?
+length(unique(df3$IDSCHOOL))
+# Save dataframe as csv
+write.csv(df3, "df3.csv", row.names = FALSE)
+
+# Option 2
+# The dataset includes the variables listed below
+# with non missing observations only
+
+df4 <- df3 %>%
+  drop_na(IDSCHOOL,
+          IDTEACH,
+          TT3G01,
+          TCHAGEGR,
+          T3JOBSA,
+          T3WELS,
+          SCHLOC)
+summary(df4)
+# How many teachers?
+length(unique(df4$IDTEACH))
+# How many schools?
+length(unique(df4$IDSCHOOL))
+# Save dataframe as csv
+write.csv(df4, "df4.csv", row.names = FALSE)
