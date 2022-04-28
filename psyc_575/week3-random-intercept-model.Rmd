@@ -240,7 +240,7 @@ where $\gamma_{00}$ is the grand *intercept*, $\gamma_{10}$ is the regression co
 ```{r m_lv2}
 m_lv2 <- lmer(mathach ~ meanses + (1 | id), data = hsball)
 summary(m_lv2)
-# Likelihood-based confidence intervals for fixed effects
+ # Likelihood-based confidence intervals for fixed effects
 # `parm = "beta_"` requests confidence intervals only for the fixed effects
 confint(m_lv2, parm = "beta_")
 ```

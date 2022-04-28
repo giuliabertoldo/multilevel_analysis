@@ -62,7 +62,7 @@ msummary_mixed <- function(models, coef_map = NULL, ...) {
 
 ```{r import_sav, message=FALSE}
 # Read in the data (pay attention to the directory)
-hsball <- read_sav(here("data_files", "hsball.sav"))
+hsball <- read_sav("hsball.sav")
 ```
 
 # Between-Within Decomposition
@@ -75,8 +75,8 @@ first center the predictor on the cluster means:
 ```{r cmc}
 hsball <- hsball %>% 
   group_by(id) %>%   # operate within schools
-  mutate(ses_cm = mean(ses),   # create cluster means (the same as `meanses`)
-         ses_cmc = ses - ses_cm) %>%   # cluster-mean centered
+  mutate(ses_cm = mean(ses),   # create cluster means 'ses_cm' (the same as `meanses`)
+         ses_cmc = ses - ses_cm) %>%   # cluster-mean centered 'ses_cmc'
   ungroup()  # exit the "editing within groups" mode
 # The meanses variable already exists in the original data, but it's slightly
 # different from computing it by hand
