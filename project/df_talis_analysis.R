@@ -240,7 +240,6 @@ cluster_size <- df %>%
 (n_eff <- length(df$IDTEACH)/design_effect)
 
 
-
 #  Model with a level-2 variable: Mean workload stress --------------------
 model2 <- lmer(T3JOBSA ~ stress_cm + (1 | IDSCHOOL), data = df)
 # Summarize results
