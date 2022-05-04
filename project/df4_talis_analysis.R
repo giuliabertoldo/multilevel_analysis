@@ -37,7 +37,8 @@ nlevels(df4$SCHLOC)
 glimpse(df4)
 
 
-# * Center predictor T3WELS & create lvl-2 predictor ----------------------
+
+# * Center lvl-1 predictors WELS & create lvl-2 predictor -----------------
 df4 <- df4 %>%
   group_by(IDSCHOOL) %>%
   # CM = Cluster Mean

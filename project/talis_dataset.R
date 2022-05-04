@@ -310,6 +310,7 @@ df1 <- df %>%
          TCHAGEGR,
          T3JOBSA,
          T3WLOAD,
+         T3SELF,
          SCHLOC,
          T3PLACRE)
 summary(df1)
@@ -331,6 +332,7 @@ df2 <- df1 %>%
           TCHAGEGR,
           T3JOBSA,
           T3WLOAD,
+          T3SELF,
           SCHLOC,
           T3PLACRE)
 summary(df2)
@@ -352,6 +354,7 @@ df3 <- df %>%
          TCHAGEGR,
          T3JOBSA,
          T3WELS,
+         T3SELF,
          SCHLOC)
 summary(df3)
 # How many teachers?
@@ -372,6 +375,7 @@ df4 <- df3 %>%
           TCHAGEGR,
           T3JOBSA,
           T3WELS,
+          T3SELF,
           SCHLOC)
 summary(df4)
 # How many teachers?
