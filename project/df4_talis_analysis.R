@@ -44,7 +44,9 @@ df4 <- df4 %>%
   # CM = Cluster Mean
   # CMC = Cluster Mean Centered variable
   mutate(T3WELS_CM = mean(T3WELS),
-         T3WELS_CMC = T3WELS - T3WELS_CM) %>%
+         T3WELS_CMC = T3WELS - T3WELS_CM,
+         T3SELF_CM = mean(T3SELF),
+         T3SELF_CMC = T3SELF - T3SELF_CM) %>%
   ungroup() %>%
   # Grand mean centering (GMC) of the aggregated variable
   mutate(T3WELS_CM_GMC = T3WELS_CM - mean(T3WELS_CM))
@@ -54,7 +56,9 @@ df4 %>%
   select(T3WELS,
          T3WELS_CM,
          T3WELS_CMC,
-         T3WELS_CM_GMC) %>%
+         T3WELS_CM_GMC,
+         T3SELF_CM,
+         T3SELF_CMC) %>%
   summary
 
 # Exploratory data analysis  ----------------------------------------------
@@ -70,6 +74,13 @@ summary(df4$TT3G01)
 ggplot(df4, aes(x=TCHAGEGR)) +
   geom_bar() +
   labs(x = 'Age group')
+
+
+# ** Teachers' self efficacy ----------------------------------------------
+ggplot(df4, aes(x=T3SELF_CMC)) +
+  geom_histogram( colour="black", fill="white") +
+  labs(x = "Teacher's Self Efficacy, composite")
+summary(df4$T3SELF_CMC)
 
 # ** Job Satisfaction, composite ------------------------------------------
 ggplot(df4, aes(x=T3JOBSA)) +
@@ -312,8 +323,36 @@ p2 <- pbase +
 gridExtra::grid.arrange(p1, p2, ncol = 2)
 
 
+
+# Add level-1 covariate ---------------------------------------------------
+
+# Model 4
+model5 <- lmer(T3JOBSA ~ T3WELS_CM_GMC + T3WELS_CMC + T3SELF_CMC + (1 + T3WELS_CMC | IDSCHOOL),
+               data = df4,
+               control = lmerControl(optimizer = "bobyqa"))
+# Summarize results
+summary(model5)
+# Likelihood-based confidence intervals for fixed effects
+confint(model5)
+
+
+# * LRT Fixed effects -----------------------------------------------------
+
+
+# * LRT Random effects ---------------------------------------------------
+
+
+# * Proportion of variance explained --------------------------------------
+## Use Rights & Sterba (2019)
+r2mlm::r2mlm(model5)
+
+
 # Model diagnostics -------------------------------------------------------
 
+
+
+
+# Cross-level interaction using Schloc? -----------------------------------
 
 
 

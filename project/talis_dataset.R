@@ -355,6 +355,7 @@ df3 <- df %>%
          T3JOBSA,
          T3WELS,
          T3SELF,
+         T3PLACRE,
          SCHLOC)
 summary(df3)
 # How many teachers?
@@ -376,6 +377,7 @@ df4 <- df3 %>%
           T3JOBSA,
           T3WELS,
           T3SELF,
+          T3PLACRE,
           SCHLOC)
 summary(df4)
 # How many teachers?
