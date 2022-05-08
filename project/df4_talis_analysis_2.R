@@ -8,6 +8,8 @@ library(lattice)
 library(sjPlot)
 library(r2mlm)
 library(broom)
+library(performance)
+library(effects)
 theme_set(theme_bw())
 
 # Load data ---------------------------------------------------------------
@@ -42,25 +44,16 @@ glimpse(df4)
 
 # * Center lvl-1 predictors WELS & create lvl-2 predictor -----------------
 df4 <- df4 %>%
-  group_by(IDSCHOOL) %>%
-  # CM = Cluster Mean
-  # CMC = Cluster Mean Centered variable
-  mutate(T3WELS_CM = mean(T3WELS),
-         T3WELS_CMC = T3WELS - T3WELS_CM,
-         T3SELF_CM = mean(T3SELF),
-         T3SELF_CMC = T3SELF - T3SELF_CM) %>%
-  ungroup() %>%
-  # Grand mean centering (GMC) of the aggregated variable
-  mutate(T3WELS_CM_GMC = T3WELS_CM - mean(T3WELS_CM))
+  # GMC = Grand Mean Centered variable
+  mutate(T3WELS_GMC = T3WELS - mean(T3WELS),
+         T3SELF_GMC = T3SELF - mean(T3SELF))
 
 # Check centering results
 df4 %>%
   select(T3WELS,
-         T3WELS_CM,
-         T3WELS_CMC,
-         T3WELS_CM_GMC,
-         T3SELF_CM,
-         T3SELF_CMC) %>%
+         T3WELS_GMC,
+         T3SELF,
+         T3SELF_GMC) %>%
   summary
 
 
@@ -97,10 +90,10 @@ ggplot(df4, aes(x=TCHAGEGR)) +
 
 
 # ** Teachers' self efficacy ----------------------------------------------
-ggplot(df4, aes(x=T3SELF_CMC)) +
+ggplot(df4, aes(x=T3SELF_GMC)) +
   geom_histogram( colour="black", fill="white") +
   labs(x = "Teacher's Self Efficacy, composite")
-summary(df4$T3SELF_CMC)
+summary(df4$T3SELF_GMC)
 
 # ** Job Satisfaction, composite ------------------------------------------
 ggplot(df4, aes(x=T3JOBSA)) +
@@ -139,10 +132,10 @@ random_id <- sample(unique(df4$IDSCHOOL), size = 10)
 )
 
 # ** Workplace stress -----------------------------------------------------
-ggplot(df4, aes(x=T3WELS_CMC)) +
+ggplot(df4, aes(x=T3WELS_GMC)) +
   geom_histogram( colour="black", fill="white") +
   labs(x = 'Workplace Stress')
-summary(df4$T3WELS_CMC)
+summary(df4$T3WELS_GMC)
 
 # ** School location ------------------------------------------------------
 df4 %>%
@@ -152,21 +145,13 @@ df4 %>%
   geom_bar() +
   labs(x = "School Location")
 
-# ** Mean workplace stress ------------------------------------------------
-df4 %>%
-  group_by(IDSCHOOL) %>%
-  filter(row_number()==1) %>%
-  ggplot(aes(x=T3WELS_CM_GMC)) +
-  geom_histogram( colour="black", fill="white") +
-  labs(x = 'Mean Workplace Stress')
-summary(df4$T3WELS_CM_GMC)
 
 # * Bivariate analysis ----------------------------------------------------
 
 # ** Workplace Stress vs Job Satisfaction ---------------------------------
 # Overall regression line
 ggplot(data  = df4,
-       aes(x = T3WELS_CMC,
+       aes(x = T3WELS_GMC,
            y = T3JOBSA,
            col = IDSCHOOL))+
   geom_point(size = 1.2,
@@ -184,7 +169,7 @@ ggplot(data  = df4,
 
 # One regression line per school
 ggplot(data  = df4,
-       aes(x = T3WELS_CMC,
+       aes(x = T3WELS_GMC,
            y = T3JOBSA,
            col = IDSCHOOL,
            group = IDSCHOOL))+
@@ -201,7 +186,9 @@ ggplot(data  = df4,
        y = "Job Satisfaction")
 
 # Unconditional random intercept model ------------------------------------
-model1 <- lmer(T3JOBSA ~ 1 + (1 | IDSCHOOL), data = df4)
+model1 <- lmer(T3JOBSA ~ 1 + (1 | IDSCHOOL),
+               data = df4,
+               REML = FALSE)
 # Summarize results
 summary(model1)
 # Profile likelihood confidence intervals
@@ -218,14 +205,13 @@ logLik(model1)
 (pval1 <- (pchisq(LR, df=1, lower.tail = FALSE)/2))
 
 # * ICC -------------------------------------------------------------------
+# Manual calculation
 variance_components <- as.data.frame(VarCorr(model1))
 (between_var <- variance_components$vcov[1])
 (within_var <- variance_components$vcov[2])
 (icc <- between_var / (between_var + within_var))
-
-# * Empirical Bayes estimates ---------------------------------------------
-
-dotplot(ranef(model1, condVar = TRUE))
+# Check with performance package
+performance::icc(model1)
 
 # * Design effect ---------------------------------------------------------
 cluster_size <- df4 %>%
@@ -236,16 +222,136 @@ cluster_size <- df4 %>%
 # Effective sample size
 (n_eff <- length(df4$IDTEACH)/design_effect)
 
+# Model 2: Add lower level-explanatory variables, fixed,  ML --------------
+# * Model 2a: Workplace stress  -------------------------------------------
+model2a_ml <- lmer(T3JOBSA ~ T3WELS_GMC + (1 | IDSCHOOL),
+                   data = df4,
+                   REML = FALSE)            # to compare fixed var sig
+model2a_reml <- lmer(T3JOBSA ~ T3WELS_GMC + (1 | IDSCHOOL),
+                     data = df4,
+                     REML = TRUE)           # for R-sq calcs
+summary(model2a_reml )
 
-# Add lvl-2 predictor: mean workplace stress ------------------------------
-model2_pre <- lmer(T3JOBSA ~ T3WELS_CM_GMC + (1 | IDSCHOOL), data = df4)
+# Assess significance of effects
+anova(model1, model2a_ml)
+
+# What does the model look like?
+effects::Effect(focal.predictors = c("T3WELS_GMC"),
+                mod = model2a_ml) %>%
+  data.frame() %>%
+  ggplot(aes(x = T3WELS_GMC,
+             y = fit)) +
+  geom_ribbon(aes(ymin = lower,
+                  ymax = upper),
+              alpha = .3) +
+  geom_line()
+
+# Proportion of variance explained
+## Extract the variance covariance estimates
+## Baseline model (BL = Baseline)
+VarCorr(model1) %>%
+  print(comp = c("Variance", "Std.Dev"),
+        digits = 4)
+## Model to compare (REML estimate)
+VarCorr(model2a_ml) %>%
+  print(comp = c("Variance", "Std.Dev"),
+        digits = 4)
+# Use the performance package
+performance::r2(model2a_ml)
+## Use Rights & Sterba (2019)
+r2mlm::r2mlm(model2a_ml)
+
+# * Model 2b: Add covariates - age gender self efficacy -------------------
+model2b_ml <- lmer(T3JOBSA ~ TT3G01 * T3WELS_GMC + (1 | IDSCHOOL),
+                   data = df4,
+                   REML = FALSE)            # to compare fixed var sig
+model2b_reml <- lmer(T3JOBSA ~ TT3G01 * T3WELS_GMC  + (1 | IDSCHOOL),
+                     data = df4,
+                     REML = TRUE)           # for R-sq calcs
+summary(model2b_reml)
+
+# Assess significance of effects
+anova(model1, model2a_ml, model2b_ml)
+
+# What does the model look like?
+effects::Effect(focal.predictors = c("T3WELS_GMC"),
+                mod = model2b_ml) %>%
+  data.frame() %>%
+  ggplot(aes(x = T3WELS_GMC,
+             y = fit)) +
+  geom_ribbon(aes(ymin = lower,
+                  ymax = upper),
+              alpha = .3) +
+  geom_line()
+
+# Proportion of variance explained
+## Extract the variance covariance estimates
+## Baseline model (BL = Baseline)
+VarCorr(model1) %>%
+  print(comp = c("Variance", "Std.Dev"),
+        digits = 4)
+## Model to compare (REML estimate)
+VarCorr(model2a_ml) %>%
+  print(comp = c("Variance", "Std.Dev"),
+        digits = 4)
+
+VarCorr(model2b_ml) %>%
+  print(comp = c("Variance", "Std.Dev"),
+        digits = 4)
+
+# Use the performance package
+performance::r2(model2b_ml)
+## Use Rights & Sterba (2019)
+r2mlm::r2mlm(model2b_ml)
+
+# Model 3: Add higher-level explanatory variables, fixed, ML --------------
+
+
+# * Model 3a: Lack of resources -------------------------------------------
+
+
+# * Model 3b: School location ---------------------------------------------
+
+
+# * Model 3c: Lack of resources and school location -----------------------
+
+
+# Model 4: Explanatory variables predict slopes, random, REML -------------
+
+
+# Model 5: Cross-level interaction ----------------------------------------
+
+
+# Model diagnostics -------------------------------------------------------
+
+
+# * Workplace stress ------------------------------------------------------
+
+
+model1.1 <- lmer(T3JOBSA ~ T3WELS_CMC + (1 | IDSCHOOL), data = df4)
 # Summarize results
-summary(model2_pre)
+summary(model1.1)
 # Likelihood-based confidence intervals for fixed effects
-confint(model2_pre)
+confint(model1.1)
 
 # Plot
-sjPlot::plot_model(model2_pre,
+plot1.1 <- sjPlot::plot_model(model1.1,
+                              type = "pred",
+                              terms = "T3WELS_CMC",
+                              show.data = TRUE,
+                              title = "",
+                              dot.size = 0.5)
+
+
+# Add lvl-2 predictor: mean workplace stress ------------------------------
+model2 <- lmer(T3JOBSA ~ T3WELS_CM_GMC + (1 | IDSCHOOL), data = df4)
+# Summarize results
+summary(model2)
+# Likelihood-based confidence intervals for fixed effects
+confint(model2)
+
+# Plot
+sjPlot::plot_model(model2,
                    type = "pred",
                    terms = "T3WELS_CM_GMC",
                    show.data = TRUE,
@@ -261,15 +367,15 @@ sjPlot::plot_model(model2_pre,
 
 # Proportion of variance explained
 ## Use Rights & Sterba (2019)
-r2mlm::r2mlm(model2_pre)
+r2mlm::r2mlm(model2)
 
 
 # Add lvl-1 predicor: workplace stress (between-within model) -------------
-model2 <- lmer(T3JOBSA ~ T3WELS_CM_GMC + T3WELS_CMC + (1 | IDSCHOOL), data = df4)
+model3 <- lmer(T3JOBSA ~ T3WELS_CM_GMC + T3WELS_CMC + (1 | IDSCHOOL), data = df4)
 # Summarize results
-summary(model2)
+summary(model3)
 # Likelihood-based confidence intervals for fixed effects
-confint(model2)
+confint(model3)
 
 # * LRT Fixed effects -----------------------------------------------------
 
@@ -279,7 +385,7 @@ confint(model2)
 
 # * Proportion of variance explained --------------------------------------
 ## Use Rights & Sterba (2019)
-r2mlm::r2mlm(model2)
+r2mlm::r2mlm(model3)
 
 
 # Random coefficients model -----------------------------------------------
@@ -293,14 +399,14 @@ df4 %>%
   geom_smooth(method = "lm") +
   facet_wrap(~IDSCHOOL)
 
-# Model 3
-model3 <- lmer(T3JOBSA ~ T3WELS_CM_GMC + T3WELS_CMC + (1 + T3WELS_CMC | IDSCHOOL),
+# Model 4
+model4 <- lmer(T3JOBSA ~ T3WELS_CM_GMC + T3WELS_CMC + (1 + T3WELS_CMC | IDSCHOOL),
                data = df4,
                control = lmerControl(optimizer = "bobyqa"))
 # Summarize results
-summary(model3)
+summary(model4)
 # Likelihood-based confidence intervals for fixed effects
-confint(model3)
+confint(model4)
 
 
 # * LRT Fixed effects -----------------------------------------------------
@@ -311,17 +417,17 @@ confint(model3)
 
 # * Proportion of variance explained --------------------------------------
 ## Use Rights & Sterba (2019)
-r2mlm::r2mlm(model3)
+r2mlm::r2mlm(model4)
 
 # Plotting random slopes
-augment(model3, data = df4) %>% # augmented data (adding EB estimates)
+augment(model4, data = df4) %>% # augmented data (adding EB estimates)
   ggplot(aes(x = T3WELS_CMC, y = .fitted, color = factor(IDSCHOOL))) +
   geom_smooth(method = "lm", se = FALSE, size = 0.5) +
   labs(y = "Predicted Job Satisfaction") +
   guides(color = "none")
 
 # Create a common base graph
-pbase <- augment(model3, data = df4) %>%
+pbase <- augment(model4, data = df4) %>%
   ggplot(aes(x = T3WELS_CMC, y = T3JOBSA, color = factor(IDSCHOOL))) +
   # Add points
   geom_point(size = 0.2, alpha = 0.2) +
