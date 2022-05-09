@@ -211,7 +211,7 @@ within_var <- variance_components$vcov[2]
 #   install.packages("devtools")
 # }
 # devtools::install_github("marklhc/bootmlm")
-bootmlm:::prof_ci_icc(ran_int)
+# bootmlm:::prof_ci_icc(ran_int)
 ```
 
 

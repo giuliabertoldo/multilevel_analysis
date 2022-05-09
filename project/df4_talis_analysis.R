@@ -210,12 +210,11 @@ confint(model1)
 # Testing for "school effects"
 # Null single level model
 fit <- lm(T3JOBSA ~ 1, data = df4)
-summary(fit)
 # Likelihood ratio
-logLik(fit)
-logLik(model1)
-(LR <- 2*(-7001.487-(-7035.406))) # 1df because only 1 parameter difference
-(pval1 <- (pchisq(LR, df=1, lower.tail = FALSE)/2))
+(ll_simple<-logLik(fit)[1])
+(ll_complex <-logLik(model1)[1])
+(LR <- -2*ll_simple-(-2*ll_complex)) # 1df because only 1 parameter difference
+(pval_lr <- (pchisq(LR, df=1, lower.tail = FALSE)/2))
 
 # * ICC -------------------------------------------------------------------
 variance_components <- as.data.frame(VarCorr(model1))
@@ -265,17 +264,85 @@ r2mlm::r2mlm(model2_pre)
 
 
 # Add lvl-1 predicor: workplace stress (between-within model) -------------
-model2 <- lmer(T3JOBSA ~ T3WELS_CM_GMC + T3WELS_CMC + (1 | IDSCHOOL), data = df4)
+model2 <- lmer(T3JOBSA ~ T3WELS_CMC+ T3WELS_CM_GMC + (1 | IDSCHOOL), data = df4)
 # Summarize results
 summary(model2)
 # Likelihood-based confidence intervals for fixed effects
 confint(model2)
 
-# * LRT Fixed effects -----------------------------------------------------
+# * Contextual effect -----------------------------------------------------
+-0.60916 - (-0.45864)
+## Look at the reparametrized model
+model2_context <- lmer(T3JOBSA ~ T3WELS + T3WELS_CM_GMC + (1 | IDSCHOOL), data = df4)
+summary(model2_context)
+# Likelihood-based confidence intervals for fixed effects
+confint(model2_context )
 
 
-# * LRT Random effects ----------------------------------------------------
+# * Visualizing the difference --------------------------------------------
+sjPlot::plot_model(model2,
+                   type = "pred",
+                   terms = "T3WELS_CM_GMC",
+                   show.data = TRUE,
+                   title = "",
+                   dot.size = 0.5) +
+  stat_summary(data = df4, aes(x = T3WELS_CM_GMC, y = T3JOBSA),
+               fun = mean, geom = "point",
+               col = "red",
+               shape = 17,
+               # use triangles
+               size = 3,
+               alpha = 0.7)
 
+# Create a common base graph
+pbase <- augment(model2, data = df4) %>%
+  ggplot(aes(x = T3WELS_CMC, y = T3JOBSA, color = factor(IDSCHOOL))) +
+  # Add points
+  geom_point(size = 0.2, alpha = 0.2) +
+  labs(y = "Job Satisfaction") +
+  # Suppress legend
+  guides(color = "none")
+# Lv-1 effect
+p1 <- pbase +
+  # Add within-cluster lines
+  geom_smooth(aes(y = .fitted),
+              method = "lm", se = FALSE, size = 0.5) +
+  labs(x="Workload stress")
+# Lv-2 effect
+p2 <- pbase +
+  # Add group means
+  stat_summary(aes(x = T3WELS_CM_GMC, y = .fitted),
+               fun = mean,
+               geom = "point",
+               shape = 17,
+               # use triangles
+               size = 2.5) +
+  # Add between coefficient
+  geom_smooth(aes(x = T3WELS_CM_GMC, y = .fitted),
+              method = "lm", se = FALSE,
+              color = "black") +
+  labs(x="Workload stress")
+# Put the two graphs together (need the gridExtra package)
+gridExtra::grid.arrange(p1, p2, ncol = 2)
+# Two separate graphs
+p1
+p2
+
+# * How much variance explained? ------------------------------------------
+# School-level variance
+round((1-(0.1342/0.217)),2)
+# Teacher-level variance
+round((1-(2.6055/3.218)),2)
+
+
+# * LRT for school-level variance -----------------------------------------
+# Null single level model
+fit <- lm(T3JOBSA ~ T3WELS + T3WELS_CM_GMC, data = df4)
+# Likelihood ratio
+(ll_simple<-logLik(fit)[1])
+(ll_complex <-logLik(model2)[1])
+(LR <- -2*ll_simple-(-2*ll_complex)) # 1df because only 1 parameter difference
+(pval_lr <- (pchisq(LR, df=1, lower.tail = FALSE)/2))
 
 # * Proportion of variance explained --------------------------------------
 ## Use Rights & Sterba (2019)
@@ -291,7 +358,9 @@ df4 %>%
   ggplot(aes(x = T3WELS_CMC, y = T3JOBSA)) +
   geom_point(size = 0.5) +
   geom_smooth(method = "lm") +
-  facet_wrap(~IDSCHOOL)
+  facet_wrap(~IDSCHOOL) +
+  labs(x="Worplace stress",
+       y="Job satisfaction")
 
 # Model 3
 model3 <- lmer(T3JOBSA ~ T3WELS_CM_GMC + T3WELS_CMC + (1 + T3WELS_CMC | IDSCHOOL),
@@ -302,12 +371,20 @@ summary(model3)
 # Likelihood-based confidence intervals for fixed effects
 confint(model3)
 
-
-# * LRT Fixed effects -----------------------------------------------------
-
-
 # * LRT Random effects ---------------------------------------------------
+anova(model2, model3)
 
+
+# * Variance-covariance matrix --------------------------------------------
+VarCorr(model3)$IDSCHOOL
+
+# Plot of schools slopes vs schools intercepts
+(myrandomeff <- ranef(model3, condVar = TRUE))
+plot(myrandomeff[[1]],
+     xlab = "Intercept(u0j)",
+     ylab = "Slope (u1j)")
+abline(h = 0 , col = "red")
+abline(v=0, col = 'red')
 
 # * Proportion of variance explained --------------------------------------
 ## Use Rights & Sterba (2019)
@@ -332,7 +409,8 @@ pbase <- augment(model3, data = df4) %>%
 p1 <- pbase +
   # Add within-cluster lines
   geom_smooth(aes(y = .fitted),
-              method = "lm", se = FALSE, size = 0.5)
+              method = "lm", se = FALSE, size = 0.5)+
+  labs(x= "Workplace stress")
 # Lv-2 effect
 p2 <- pbase +
   # Add group means
@@ -345,43 +423,10 @@ p2 <- pbase +
   # Add between coefficient
   geom_smooth(aes(x = T3WELS_CM_GMC, y = .fitted),
               method = "lm", se = FALSE,
-              color = "black")
+              color = "black") +
+  labs(x= "Workplace stress")
 # Put the two graphs together (need the gridExtra package)
 gridExtra::grid.arrange(p1, p2, ncol = 2)
-
-
-
-# Add level-1 covariate ---------------------------------------------------
-
-# Model 4
-model5 <- lmer(T3JOBSA ~ T3WELS_CM_GMC + T3WELS_CMC + T3SELF_CMC + (1 + T3WELS_CMC | IDSCHOOL),
-               data = df4,
-               control = lmerControl(optimizer = "bobyqa"))
-# Summarize results
-summary(model5)
-# Likelihood-based confidence intervals for fixed effects
-confint(model5)
-
-
-# * LRT Fixed effects -----------------------------------------------------
-
-
-# * LRT Random effects ---------------------------------------------------
-
-
-# * Proportion of variance explained --------------------------------------
-## Use Rights & Sterba (2019)
-r2mlm::r2mlm(model5)
-
-
-# Model diagnostics -------------------------------------------------------
-
-
-
-
-# Cross-level interaction using Schloc? -----------------------------------
-
-
-
-
+# Print separate
+p1
 
