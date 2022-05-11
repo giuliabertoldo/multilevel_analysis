@@ -11,7 +11,7 @@ library(broom)
 theme_set(theme_bw())
 
 # Load data ---------------------------------------------------------------
-df4 <- read.csv('project/data/df4.csv')
+df4 <- read.csv('project_talis/talis_data/df4.csv')
 
 # Glimpse data
 glimpse(df4)
